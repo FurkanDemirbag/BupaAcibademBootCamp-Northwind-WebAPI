@@ -10,17 +10,19 @@ namespace Northwind.Interface
 {
     public interface IGenericService<T, TDto> where T : IEntityBase where TDto : IDtoBase
     {
-        List<TDto> GetAll();
-        List<TDto> GetAll(Expression<Func<T, bool>> expression);
-        TDto Find(int id);
-        IQueryable<T> GetIQueryable();
-        TDto Add(TDto item);
-        Task<TDto> AddAsync(TDto item);
-        TDto Update(TDto item);
-        Task<TDto> UpdateAsync(TDto item);
-        bool DeleteById(int id);
-        Task<bool> DeleteByIdAsync(int id);
-        bool Delete(TDto item);
-        Task<bool> DeleteAsync(TDto item);
+        IResponse<List<TDto>> GetAll();
+        IResponse<List<TDto>> GetAll(Expression<Func<T, bool>> expression);
+        IResponse<TDto> Find(int id);
+        IResponse<IQueryable<T>> GetIQueryable();
+        IResponse<TDto> Add(TDto item, bool hasTransactional = true);
+        IResponse<Task<TDto>> AddAsync(TDto item);
+        IResponse<TDto> Update(TDto item, bool hasTransactional);
+        IResponse<Task<TDto>> UpdateAsync(TDto item);
+        IResponse<bool> DeleteById(int id);
+        IResponse<Task<bool>> DeleteByIdAsync(int id);
+        IResponse<bool> Delete(TDto item, bool hasTransactional = true);
+        IResponse<Task<bool>> DeleteAsync(TDto item);
+
+        void SaveChanges();
     }
 }
