@@ -42,6 +42,10 @@ namespace Northwind.Entity.Mapper
             CreateMap<SalesTotalsByAmount, DtoSalesTotalsByAmount>().ReverseMap();
             CreateMap<SummaryOfSalesByQuarter, DtoSummaryOfSalesByQuarter>().ReverseMap();
             CreateMap<SummaryOfSalesByYear, DtoSummaryOfSalesByYear>().ReverseMap();
+            CreateMap<User, DtoUser>().ReverseMap();
+            CreateMap<User, DtoLogin>().ReverseMap();
+            CreateMap<User, DtoRegister>().ReverseMap();
+            CreateMap<UserRefreshToken, DtoUserRefreshToken>().ReverseMap();
         }
     }
 }

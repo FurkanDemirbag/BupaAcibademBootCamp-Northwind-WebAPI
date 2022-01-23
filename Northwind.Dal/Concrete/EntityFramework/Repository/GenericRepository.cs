@@ -22,24 +22,67 @@ namespace Northwind.Dal.Concrete.EntityFramework.Repository
         {
             this.context = context;
             this.dbSet = this.context.Set<T>();
-            this.context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
         #endregion
 
         #region Methods
-        public List<T> GetAll()
+        public List<T> GetAll(params string[] includes)
         {
-            return dbSet.ToList();
+            IQueryable<T> data = dbSet;
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    data = data.Include(include);
+                }
+            }
+            return data.ToList();
         }
 
-        public IQueryable<T> GetAll(Expression<Func<T, bool>> expression)
+        public IQueryable<T> GetAll(Expression<Func<T, bool>> expression, params string[] includes)
         {
-            return dbSet.Where(expression);
+            IQueryable<T> data = dbSet;
+
+            if (expression != null)
+            {
+                data = data.Where(expression);
+            }
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    data = data.Include(include);
+                }
+            }
+
+            return data;
         }
 
         public T Find(int id)
         {
             return dbSet.Find(id);
+        }
+
+        public T Find(Expression<Func<T, bool>> expression, params string[] includes)
+        {
+            IQueryable<T> data = dbSet;
+
+            if (expression != null)
+            {
+                data = data.Where(expression);
+            }
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    data = data.Include(include);
+                }
+            }
+
+            return data.FirstOrDefault();
         }
 
         public T Add(T entity)
@@ -70,6 +113,18 @@ namespace Northwind.Dal.Concrete.EntityFramework.Repository
             }
 
             return dbSet.Remove(entity) != null;
+        }
+
+        public bool Any(Expression<Func<T, bool>> expression)
+        {
+            IQueryable<T> data = dbSet;
+
+            if (expression != null)
+            {
+                data = data.Where(expression);
+            }
+
+            return data.Any();
         }
         #endregion
     }

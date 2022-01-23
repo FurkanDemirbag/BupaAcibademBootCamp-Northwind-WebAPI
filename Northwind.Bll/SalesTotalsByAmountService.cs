@@ -1,0 +1,24 @@
+﻿using Northwind.Bll.Base;
+using Northwind.Dal.Abstract;
+using Northwind.Entity.Dto;
+using Northwind.Entity.Models;
+using Northwind.Interface;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Northwind.Bll
+{
+    public class SalesTotalsByAmountService : BllBase<SalesTotalsByAmount, DtoSalesTotalsByAmount>, ISalesTotalsByAmountService
+    {
+        private readonly ISalesTotalsByAmountService _salesTotalsByAmountService;
+
+        public SalesTotalsByAmountService(IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+            _salesTotalsByAmountService = serviceProvider.GetService<ISalesTotalsByAmountService>();
+        }
+    }
+}

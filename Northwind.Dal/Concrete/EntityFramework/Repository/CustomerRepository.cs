@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Northwind.Dal.Abstract;
+using Northwind.Entity.Dto;
 using Northwind.Entity.Models;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,11 @@ namespace Northwind.Dal.Concrete.EntityFramework.Repository
         public IQueryable CustomerReport()
         {
             return dbSet.AsQueryable();
+        }
+
+        public Customer FindById(string id)
+        {
+            return dbSet.FirstOrDefault(a => a.CustomerId == id);
         }
     }
 }

@@ -24,9 +24,14 @@ namespace Northwind.Entity.Dto
         public string ShipPostalCode { get; set; }
         public string ShipCountry { get; set; }
 
+        public virtual DtoCustomer Customer { get; set; }
+        public virtual DtoEmployee Employee { get; set; }
+        public virtual DtoShipper Shipper { get; set; }
+        public virtual List<DtoOrderDetail> OrderDetails { get; set; }
+
         public DtoOrder()
         {
-
+            OrderDetails = new List<DtoOrderDetail>();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 using Northwind.Entity.Models;
 
 #nullable disable
@@ -9,9 +10,11 @@ namespace Northwind.Dal.Concrete.EntityFramework.Context
 {
     public partial class NORTHWNDContext : DbContext
     {
-        public NORTHWNDContext()
-        {
-        }
+        //IConfiguration _configuration;
+        //public NORTHWNDContext(IConfiguration configuration)
+        //{
+        //    _configuration = configuration;
+        //}
 
         public NORTHWNDContext(DbContextOptions<NORTHWNDContext> options)
             : base(options)
@@ -47,13 +50,17 @@ namespace Northwind.Dal.Concrete.EntityFramework.Context
         public virtual DbSet<SummaryOfSalesByYear> SummaryOfSalesByYears { get; set; }
         public virtual DbSet<Supplier> Suppliers { get; set; }
         public virtual DbSet<Territory> Territories { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Data Source=Shanks;Initial Catalog=NORTHWND;Integrated Security=True;");
-            }
+            //if (!optionsBuilder.IsConfigured)
+            //{
+            //    //optionsBuilder.UseSqlServer(_configuration.GetConnectionString("ConnectionString"));
+            //}
+
+            optionsBuilder.UseLazyLoadingProxies(useLazyLoadingProxies: false);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -126,6 +133,11 @@ namespace Northwind.Dal.Concrete.EntityFramework.Context
                 entity.Property(e => e.ProductName)
                     .IsRequired()
                     .HasMaxLength(40);
+            });
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.Property(e => e.UserID).HasColumnName("UserID");
             });
 
             modelBuilder.Entity<Customer>(entity =>

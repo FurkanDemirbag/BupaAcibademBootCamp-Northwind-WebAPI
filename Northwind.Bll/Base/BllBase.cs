@@ -14,13 +14,12 @@ using System.Threading.Tasks;
 
 namespace Northwind.Bll.Base
 {
-    public class BllBase<T, TDto> : IGenericService<T, TDto> where T:EntityBase where TDto:DtoBase
+    public class BllBase<T, TDto> : IGenericService<T, TDto> where T : EntityBase where TDto : DtoBase
     {
         #region Variables
         private readonly IUnitOfWork _unitOfWork;
         private readonly IServiceProvider _serviceProvider;
         private readonly IGenericRepository<T> _repository;
-        Mapper _mapper;
         #endregion
 
         public BllBase(IServiceProvider serviceProvider)
@@ -28,14 +27,13 @@ namespace Northwind.Bll.Base
             _unitOfWork = serviceProvider.GetService<IUnitOfWork>();
             _repository = _unitOfWork.GetRepository<T>();
             _serviceProvider = serviceProvider;
-            _mapper = new Mapper((IConfigurationProvider)serviceProvider);
         }
 
         public IResponse<TDto> Add(TDto item, bool hasTransactional = true)
         {
             try
             {
-                var tResult = _repository.Add(_mapper.Map<T>(item));
+                var tResult = _repository.Add(ObjectMapper.Mapper.Map<T>(item));
 
                 if (hasTransactional)
                 {
@@ -46,7 +44,7 @@ namespace Northwind.Bll.Base
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
-                    Data = _mapper.Map<T,TDto>(tResult)
+                    Data = ObjectMapper.Mapper.Map<T, TDto>(tResult)
                 };
             }
             catch (Exception ex)
@@ -69,7 +67,7 @@ namespace Northwind.Bll.Base
         {
             try
             {
-                var tResult = _repository.Delete(_mapper.Map<T>(item));
+                var tResult = _repository.Delete(ObjectMapper.Mapper.Map<T>(item));
 
                 if (hasTransactional)
                 {
@@ -80,7 +78,7 @@ namespace Northwind.Bll.Base
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
-                    Data = _mapper.Map<bool>(tResult)
+                    Data = ObjectMapper.Mapper.Map<bool>(tResult)
                 };
             }
             catch (Exception ex)
@@ -99,13 +97,20 @@ namespace Northwind.Bll.Base
             throw new NotImplementedException();
         }
 
-        public IResponse<bool> DeleteById(int id)
+        public IResponse<bool> DeleteById(int id, bool hasTransactional = true)
         {
             try
             {
+                _repository.Delete(id);
+
+                if (hasTransactional)
+                {
+                    SaveChanges();
+                }
+
                 return new Response<bool>
                 {
-                    Data = _mapper.Map<bool>(_repository.Delete(id)),
+                    Data = true,
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success"
                 };
@@ -132,7 +137,7 @@ namespace Northwind.Bll.Base
             {
                 return new Response<TDto>
                 {
-                    Data = _mapper.Map<T, TDto>(_repository.Find(id)),
+                    Data = ObjectMapper.Mapper.Map<T, TDto>(_repository.Find(id)),
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success"
                 };
@@ -148,13 +153,35 @@ namespace Northwind.Bll.Base
             }
         }
 
-        public IResponse<List<TDto>> GetAll()
+        public IResponse<TDto> Find(Expression<Func<T, bool>> expression, params string[] includes)
+        {
+            try
+            {
+                return new Response<TDto>
+                {
+                    Data = ObjectMapper.Mapper.Map<T, TDto>(_repository.Find(expression,includes)),
+                    StatusCode = StatusCodes.Status200OK,
+                    Message = "Success"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response<TDto>
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    Message = GetErrorMessage(ex),
+                    Data = null
+                };
+            }
+        }
+
+        public IResponse<List<TDto>> GetAll(params string[] includes)
         {
             try
             {
                 return new Response<List<TDto>>
                 {
-                    Data = _mapper.Map<List<TDto>>(_repository.GetAll()),
+                    Data = _repository.GetAll(includes).Select(a => ObjectMapper.Mapper.Map<TDto>(a)).ToList(),
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success"
                 };
@@ -170,13 +197,13 @@ namespace Northwind.Bll.Base
             }
         }
 
-        public IResponse<List<TDto>> GetAll(Expression<Func<T, bool>> expression)
+        public IResponse<List<TDto>> GetAll(Expression<Func<T, bool>> expression, params string[] includes)
         {
             try
             {
                 return new Response<List<TDto>>
                 {
-                    Data = _mapper.Map<List<TDto>>(_repository.GetAll(expression)),
+                    Data = _repository.GetAll(expression,includes).Select(a => ObjectMapper.Mapper.Map<TDto>(a)).ToList(),
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success"
                 };
@@ -201,7 +228,7 @@ namespace Northwind.Bll.Base
         {
             try
             {
-                var tResult = _repository.Update(_mapper.Map<T>(item));
+                var tResult = _repository.Update(ObjectMapper.Mapper.Map<T>(item));
 
                 if (hasTransactional)
                 {
@@ -212,7 +239,7 @@ namespace Northwind.Bll.Base
                 {
                     StatusCode = StatusCodes.Status200OK,
                     Message = "Success",
-                    Data = _mapper.Map<T, TDto>(tResult)
+                    Data = ObjectMapper.Mapper.Map<T, TDto>(tResult)
                 };
             }
             catch (Exception ex)
@@ -231,6 +258,11 @@ namespace Northwind.Bll.Base
             throw new NotImplementedException();
         }
 
+        public bool Any(Expression<Func<T, bool>> expression)
+        {
+            return _repository.Any(expression);
+        }
+
         public void SaveChanges()
         {
             _unitOfWork.SaveChanges();
@@ -239,7 +271,7 @@ namespace Northwind.Bll.Base
         private string GetErrorMessage(Exception ex)
         {
             var message = "";
-            
+
             message += ex.Message + Environment.NewLine;
             message += ex.StackTrace + Environment.NewLine;
             if (ex.InnerException != null)

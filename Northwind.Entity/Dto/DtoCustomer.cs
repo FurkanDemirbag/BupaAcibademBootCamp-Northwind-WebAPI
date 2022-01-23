@@ -21,9 +21,13 @@ namespace Northwind.Entity.Dto
         public string Phone { get; set; }
         public string Fax { get; set; }
 
+        public virtual List<DtoCustomerCustomerDemo> CustomerCustomerDemos { get; set; }
+        public virtual List<DtoOrder> Orders { get; set; }
+
         public DtoCustomer()
         {
-            
+            CustomerCustomerDemos = new List<DtoCustomerCustomerDemo>();
+            Orders = new List<DtoOrder>();
         }
     }
 }
